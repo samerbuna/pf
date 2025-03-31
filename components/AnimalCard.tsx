@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, Text, View, Pressable } from 'react-native';
 import { Animal } from '@/hooks/usePetfinder';
 import { router } from 'expo-router';
+import { PlaceholderImage } from './PlaceholderImage';
 
 interface AnimalCardProps {
   animal: Animal;
@@ -9,13 +10,20 @@ interface AnimalCardProps {
 }
 
 export function AnimalCard({ animal, onPress }: AnimalCardProps) {
-  const photoUrl = animal.photos[0]?.medium;
+  const photoUrl =
+    animal.photos[0]?.medium ??
+    animal.photos[0]?.small ??
+    animal.photos[0]?.full;
 
   return (
     <Pressable
       testID={`animal-card-${animal.id}`}
       onPress={() => onPress(animal)}
-      className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden"
+      className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden"
+      style={{
+        borderWidth: 1,
+        borderColor: '#f3f4f6',
+      }}
     >
       <View className="w-full h-48">
         {photoUrl ? (
@@ -30,12 +38,7 @@ export function AnimalCard({ animal, onPress }: AnimalCardProps) {
             }
           />
         ) : (
-          <View
-            testID={`animal-image-placeholder-${animal.id}`}
-            className="w-full h-full bg-gray-200 items-center justify-center"
-          >
-            <Text className="text-gray-400">No image available</Text>
-          </View>
+          <PlaceholderImage />
         )}
       </View>
       <View className="p-4">

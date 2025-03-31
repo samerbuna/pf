@@ -3,6 +3,11 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AnimalCard } from '../AnimalCard';
 import { Animal } from '@/hooks/usePetfinder';
 
+// Mock MaterialCommunityIcons
+jest.mock('@expo/vector-icons', () => ({
+  MaterialCommunityIcons: () => 'MaterialCommunityIcons',
+}));
+
 const mockAnimal: Animal = {
   id: 1,
   type: 'Dog',
@@ -30,13 +35,19 @@ const mockAnimal: Animal = {
 describe('AnimalCard', () => {
   it('renders animal information correctly', () => {
     const onPress = jest.fn();
-    const { getByText } = render(
+    const { getByText, getByTestId } = render(
       <AnimalCard animal={mockAnimal} onPress={onPress} />
     );
 
-    expect(getByText('Buddy')).toBeTruthy();
-    expect(getByText('Labrador / Golden Retriever')).toBeTruthy();
-    expect(getByText('Young • Male • Medium')).toBeTruthy();
+    expect(getByTestId(`animal-name-${mockAnimal.id}`)).toHaveTextContent(
+      'Buddy'
+    );
+    expect(getByTestId(`animal-breed-${mockAnimal.id}`)).toHaveTextContent(
+      'Labrador / Golden Retriever'
+    );
+    expect(getByTestId(`animal-details-${mockAnimal.id}`)).toHaveTextContent(
+      'Young • Male • Medium'
+    );
   });
 
   it('calls onPress when pressed', () => {
@@ -59,5 +70,14 @@ describe('AnimalCard', () => {
     );
 
     expect(getByText('No image available')).toBeTruthy();
+  });
+
+  it('displays image when photo is available', () => {
+    const { getByTestId } = render(
+      <AnimalCard animal={mockAnimal} onPress={jest.fn()} />
+    );
+
+    const image = getByTestId(`animal-image-${mockAnimal.id}`);
+    expect(image.props.source.uri).toBe(mockAnimal.photos[0].medium);
   });
 });

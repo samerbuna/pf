@@ -69,7 +69,6 @@ export function useAnimals() {
         throw new Error('Failed to fetch animals');
       }
       const data = await response.json();
-      console.log('API Response:', JSON.stringify(data, null, 2));
       return data as AnimalsResponse;
     },
     getNextPageParam: (lastPage) => {
