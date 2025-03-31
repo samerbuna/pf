@@ -4,7 +4,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { AnimalCard } from '@/components/AnimalCard';
 
 export default function FavoritesScreen() {
-  const { favorites, isLoading } = useFavorites();
+  const { favorites, isLoading, error } = useFavorites();
 
   if (isLoading) {
     return (
@@ -14,6 +14,19 @@ export default function FavoritesScreen() {
           size="large"
           color="#4f46e5"
         />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-red-500 text-center mb-2">
+          Error: {error.message}
+        </Text>
+        <Text className="text-gray-500 text-center">
+          Please try again later.
+        </Text>
       </View>
     );
   }

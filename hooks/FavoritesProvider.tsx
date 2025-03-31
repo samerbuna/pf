@@ -7,6 +7,7 @@ const FAVORITES_KEY = '@pet-finder:favorites';
 interface FavoritesContextType {
   favorites: Animal[];
   isLoading: boolean;
+  error: Error | null;
   addFavorite: (animal: Animal) => Promise<void>;
   removeFavorite: (animalId: number) => Promise<void>;
   isFavorite: (animalId: number) => boolean;
@@ -17,19 +18,21 @@ const FavoritesContext = createContext<FavoritesContextType | null>(null);
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<Animal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const loadFavorites = async () => {
     try {
+      setError(null);
       const storedFavorites = await AsyncStorage.getItem(FAVORITES_KEY);
-
-      if (storedFavorites) {
-        const parsedFavorites = JSON.parse(storedFavorites);
-        setFavorites(parsedFavorites);
-      } else {
-        setFavorites([]);
-      }
-    } catch (error) {
-      console.error('Error loading favorites:', error);
+      const parsedFavorites = storedFavorites
+        ? JSON.parse(storedFavorites)
+        : [];
+      setFavorites(parsedFavorites);
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+      setError(
+        err instanceof Error ? err : new Error('Failed to load favorites')
+      );
       setFavorites([]);
     } finally {
       setIsLoading(false);
@@ -37,26 +40,34 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    loadFavorites();
+    void loadFavorites();
   }, []);
 
   const addFavorite = async (animal: Animal) => {
     try {
+      setError(null);
       const newFavorites = [...favorites, animal];
       await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
-      await loadFavorites();
-    } catch (error) {
-      console.error('Error adding favorite:', error);
+      setFavorites(newFavorites);
+    } catch (err) {
+      console.error('Error adding favorite:', err);
+      setError(
+        err instanceof Error ? err : new Error('Failed to add favorite')
+      );
     }
   };
 
   const removeFavorite = async (animalId: number) => {
     try {
+      setError(null);
       const newFavorites = favorites.filter((fav) => fav.id !== animalId);
       await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
-      await loadFavorites();
-    } catch (error) {
-      console.error('Error removing favorite:', error);
+      setFavorites(newFavorites);
+    } catch (err) {
+      console.error('Error removing favorite:', err);
+      setError(
+        err instanceof Error ? err : new Error('Failed to remove favorite')
+      );
     }
   };
 
@@ -69,6 +80,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       value={{
         favorites,
         isLoading,
+        error,
         addFavorite,
         removeFavorite,
         isFavorite,

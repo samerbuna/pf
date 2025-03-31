@@ -1,0 +1,134 @@
+= Pet Finder
+
+A React Native mobile application that helps users discover and save their favorite adoptable pets. The app integrates with the Petfinder API to provide a seamless experience for browsing pets available for adoption.
+
+== Features
+
+* Browse adoptable pets with infinite scroll.
+* View detailed pet information.
+* Save favorite pets for later reference.
+* Explore different animal types and their characteristics.
+* Responsive image handling with placeholders.
+* Dark/Light theme support.
+
+== Technical Overview
+
+=== Core Technologies
+
+[cols="1,2"]
+|===
+|Technology |Description
+
+|*Framework*
+|Built with https://expo.dev/[Expo] and React Native for cross-platform compatibility
+
+|*Navigation*
+|Uses https://docs.expo.dev/router/introduction/[Expo Router] for file-based routing
+
+|*Styling*
+|https://www.nativewind.dev/[NativeWind] (Tailwind CSS for React Native)
+
+|*State Management*
+| https://tanstack.com/query/latest[TanStack Query] for server state (and React Context for local favorites management)
+
+|*Storage*
+|AsyncStorage for persistent favorites data
+
+|*Testing*
+|Jest and React Native Testing Library
+|===
+
+=== Why These Choices?
+
+* *Expo*: Rapid development, easy deployment, and built-in features
+* *NativeWind*: Enables rapid UI development while maintaining native performance
+* *TanStack Query*: Built-in caching, retry logic, and infinite scroll support
+* *AsyncStorage*: Simple, reliable solution for small-scale persistent storage
+
+== Getting Started
+
+=== Prerequisites
+
+* Node.js (v20 or later)
+* npm or yarn
+* Expo CLI (`npm install -g expo-cli`)
+* Petfinder API credentials (get them https://www.petfinder.com/developers/[here])
+
+=== Environment Setup
+
+. Clone the repository:
++
+[source,bash]
+----
+git clone https://github.com/samerbuna/pf.git
+cd pf
+----
+
+. Install dependencies:
++
+[source,bash]
+----
+npm install
+----
+
+. Create a `.env` file:
++
+[source,properties]
+----
+EXPO_PUBLIC_PETFINDER_API_KEY=your_api_key
+EXPO_PUBLIC_PETFINDER_API_SECRET=your_api_secret
+----
+
+=== Development
+
+Start the development server:
+
+[source,bash]
+----
+npx expo start
+----
+
+Run on a specific platform:
+
+[source,bash]
+----
+# iOS Simulator
+npm run ios
+
+# Android Emulator
+npm run android
+----
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Run tests once
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### Project Structure
+
+```plaintext
+src/
+├── components/     # Reusable UI components
+├── hooks/         # Custom React hooks
+├── types/         # TypeScript type definitions
+├── utils/         # Helper functions
+└── app/           # Screen components (Expo Router)
+```
+
+## Future Improvements
+
+- Add search and filtering capabilities
+- Implement offline support
+- Enhance accessibility features
+- Support multiple photos per animal
+- Add end-to-end tests
+- Improve performance for large datasets
+- Add animations for better user experience
+- Implement a dark mode toggle

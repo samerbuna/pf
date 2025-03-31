@@ -1,14 +1,135 @@
 import React from 'react';
-import { View, Text, Image, Modal, ScrollView, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Modal,
+  ScrollView,
+  Pressable,
+  SafeAreaView,
+} from 'react-native';
 import { Animal } from '@/hooks/usePetfinder';
 import { PlaceholderImage } from './PlaceholderImage';
 import { Ionicons } from '@expo/vector-icons';
 import { useFavorites } from '@/hooks/useFavorites';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface AnimalModalProps {
   animal: Animal;
   visible: boolean;
   onClose: () => void;
+}
+
+interface TagProps {
+  text: string;
+  color: string;
+}
+
+const TAG_COLORS = {
+  type: 'bg-indigo-100 text-indigo-800',
+  breed: 'bg-blue-100 text-blue-800',
+  gender: 'bg-pink-100 text-pink-800',
+  age: 'bg-yellow-100 text-yellow-800',
+  size: 'bg-orange-100 text-orange-800',
+  color: 'bg-red-100 text-red-800',
+  health: 'bg-green-100 text-green-800',
+  environment: 'bg-purple-100 text-purple-800',
+} as const;
+
+function Tag({ text, color }: TagProps) {
+  return (
+    <View className={`${color} px-3 py-1 rounded-full mr-2 mb-2`}>
+      <Text className="text-sm font-medium">{text}</Text>
+    </View>
+  );
+}
+
+function TagGroup({ children }: { children: React.ReactNode }) {
+  return <View className="flex-row flex-wrap">{children}</View>;
+}
+
+interface ContactInfoProps {
+  organization: Animal['organization'];
+}
+
+function ContactInfo({ organization }: ContactInfoProps) {
+  if (!organization) return null;
+
+  return (
+    <View className="space-y-3">
+      <View className="flex-row justify-between items-center">
+        <Text className="text-gray-600">Organization</Text>
+        <Text className="font-medium text-gray-900">
+          {organization.name || 'Not available'}
+        </Text>
+      </View>
+      <View className="flex-row justify-between items-center">
+        <Text className="text-gray-600">Location</Text>
+        <Text className="font-medium text-gray-900">
+          {organization.address
+            ? `${organization.address.city || 'N/A'}, ${
+                organization.address.state || 'N/A'
+              }`
+            : 'Not available'}
+        </Text>
+      </View>
+      <View className="flex-row items-center justify-center rounded-lg p-3 shadow-sm">
+        <MaterialCommunityIcons
+          name="phone"
+          size={20}
+          color="#374151"
+          className="mr-2"
+        />
+        <Text className="text-base font-medium text-gray-900">
+          {organization.phone || 'Not available'}
+        </Text>
+      </View>
+      <View className="flex-row items-center justify-center rounded-lg p-3 shadow-sm">
+        <MaterialCommunityIcons
+          name="email"
+          size={20}
+          color="#374151"
+          className="mr-2"
+        />
+        <Text className="text-base font-medium text-gray-900">
+          {organization.email || 'Not available'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+interface FavoriteButtonProps {
+  isFavorite: boolean;
+  onPress: () => void;
+}
+
+function FavoriteButton({ isFavorite, onPress }: FavoriteButtonProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`flex-row items-center justify-center rounded-lg p-3 shadow-sm ${
+        isFavorite
+          ? 'bg-rose-50 border border-rose-200'
+          : 'bg-green-50 border border-green-200'
+      }`}
+      testID="favorite-button"
+    >
+      <Ionicons
+        name={isFavorite ? 'heart' : 'heart-outline'}
+        size={24}
+        color={isFavorite ? '#e11d48' : '#6b7280'}
+        className="mr-2"
+      />
+      <Text
+        className={`text-base font-medium ${
+          isFavorite ? 'text-rose-600' : 'text-gray-600'
+        }`}
+      >
+        {isFavorite ? 'Unfavorite' : 'Favorite'}
+      </Text>
+    </Pressable>
+  );
 }
 
 export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
@@ -42,18 +163,6 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
     );
   };
 
-  const renderTag = (
-    text: string,
-    color: string = 'bg-blue-100 text-blue-800'
-  ) => {
-    if (!text) return null;
-    return (
-      <View className={`${color} px-3 py-1 rounded-full mr-2 mb-2`}>
-        <Text className="text-sm font-medium">{text}</Text>
-      </View>
-    );
-  };
-
   const renderHealthCareTags = () => {
     const tags = [];
     if (animal.attributes.spayed_neutered) tags.push('Spayed/Neutered');
@@ -65,13 +174,11 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
     if (tags.length === 0) return null;
 
     return (
-      <View className="flex-row flex-wrap">
+      <TagGroup>
         {tags.map((tag) => (
-          <View key={tag} className="mr-2 mb-2">
-            {renderTag(tag, 'bg-green-100 text-green-800')}
-          </View>
+          <Tag key={tag} text={tag} color={TAG_COLORS.health} />
         ))}
-      </View>
+      </TagGroup>
     );
   };
 
@@ -84,56 +191,39 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
     if (tags.length === 0) return null;
 
     return (
-      <View className="flex-row flex-wrap">
+      <TagGroup>
         {tags.map((tag) => (
-          <View key={tag} className="mr-2 mb-2">
-            {renderTag(tag, 'bg-purple-100 text-purple-800')}
-          </View>
+          <Tag key={tag} text={tag} color={TAG_COLORS.environment} />
         ))}
-      </View>
+      </TagGroup>
     );
   };
 
   const renderBasicInfoTags = () => {
     const tags = [];
-    if (animal.type)
-      tags.push({ text: animal.type, color: 'bg-indigo-100 text-indigo-800' });
+    if (animal.type) tags.push({ text: animal.type, color: TAG_COLORS.type });
     if (animal.breeds.primary)
-      tags.push({
-        text: animal.breeds.primary,
-        color: 'bg-blue-100 text-blue-800',
-      });
+      tags.push({ text: animal.breeds.primary, color: TAG_COLORS.breed });
     if (animal.breeds.secondary)
-      tags.push({
-        text: animal.breeds.secondary,
-        color: 'bg-blue-100 text-blue-800',
-      });
+      tags.push({ text: animal.breeds.secondary, color: TAG_COLORS.breed });
     if (animal.gender)
-      tags.push({ text: animal.gender, color: 'bg-pink-100 text-pink-800' });
-    if (animal.age)
-      tags.push({ text: animal.age, color: 'bg-yellow-100 text-yellow-800' });
-    if (animal.size)
-      tags.push({ text: animal.size, color: 'bg-orange-100 text-orange-800' });
+      tags.push({ text: animal.gender, color: TAG_COLORS.gender });
+    if (animal.age) tags.push({ text: animal.age, color: TAG_COLORS.age });
+    if (animal.size) tags.push({ text: animal.size, color: TAG_COLORS.size });
     if (animal.colors.primary)
-      tags.push({
-        text: animal.colors.primary,
-        color: 'bg-red-100 text-red-800',
-      });
+      tags.push({ text: animal.colors.primary, color: TAG_COLORS.color });
     if (animal.colors.secondary)
-      tags.push({
-        text: animal.colors.secondary,
-        color: 'bg-red-100 text-red-800',
-      });
+      tags.push({ text: animal.colors.secondary, color: TAG_COLORS.color });
 
     if (tags.length === 0) return null;
 
     return (
-      <View className="flex-row flex-wrap mb-6">
-        {tags.map((tag) => (
-          <View key={tag.text} className="mr-2 mb-2">
-            {renderTag(tag.text, tag.color)}
-          </View>
-        ))}
+      <View className="mb-6">
+        <TagGroup>
+          {tags.map((tag) => (
+            <Tag key={tag.text} text={tag.text} color={tag.color} />
+          ))}
+        </TagGroup>
       </View>
     );
   };
@@ -145,7 +235,7 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1 bg-gray-50">
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 bg-white border-b border-gray-200">
           <Text className="text-xl font-bold text-gray-900">{animal.name}</Text>
@@ -170,29 +260,10 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
 
           {/* Favorite Button */}
           <View className="px-4 py-2">
-            <Pressable
+            <FavoriteButton
+              isFavorite={isAnimalFavorite}
               onPress={handleFavoritePress}
-              className={`flex-row items-center justify-center rounded-lg p-3 shadow-sm ${
-                isAnimalFavorite
-                  ? 'bg-rose-50 border border-rose-200'
-                  : 'bg-white border border-gray-200'
-              }`}
-              testID="favorite-button"
-            >
-              <Ionicons
-                name={isAnimalFavorite ? 'heart' : 'heart-outline'}
-                size={24}
-                color={isAnimalFavorite ? '#e11d48' : '#6b7280'}
-                style={{ marginRight: 8 }}
-              />
-              <Text
-                className={`text-base font-medium ${
-                  isAnimalFavorite ? 'text-rose-600' : 'text-gray-600'
-                }`}
-              >
-                {isAnimalFavorite ? 'Unfavorite' : 'Favorite'}
-              </Text>
-            </Pressable>
+            />
           </View>
 
           <View className="p-4">
@@ -220,40 +291,11 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
             {animal.organization &&
               renderInfoSection(
                 'Contact Information',
-                <View className="space-y-3">
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-gray-600">Organization</Text>
-                    <Text className="font-medium text-gray-900">
-                      {animal.organization.name || 'Not available'}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-gray-600">Location</Text>
-                    <Text className="font-medium text-gray-900">
-                      {animal.organization.address
-                        ? `${animal.organization.address.city || 'N/A'}, ${
-                            animal.organization.address.state || 'N/A'
-                          }`
-                        : 'Not available'}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-gray-600">Phone</Text>
-                    <Text className="font-medium text-gray-900">
-                      {animal.organization.phone || 'Not available'}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-gray-600">Email</Text>
-                    <Text className="font-medium text-gray-900">
-                      {animal.organization.email || 'Not available'}
-                    </Text>
-                  </View>
-                </View>
+                <ContactInfo organization={animal.organization} />
               )}
           </View>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }

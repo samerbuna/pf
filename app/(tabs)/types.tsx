@@ -1,6 +1,40 @@
 import React from 'react';
 import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useAnimalTypes } from '@/hooks/usePetfinder';
+import { AnimalType } from '@/hooks/usePetfinder';
+
+interface TypeDetailsProps {
+  label: string;
+  items: string[];
+}
+
+function TypeDetails({ label, items }: TypeDetailsProps) {
+  if (!items.length) return null;
+
+  return (
+    <View className="mt-2">
+      <Text className="text-gray-500 font-medium">{label}:</Text>
+      <Text className="text-gray-600 mt-1">{items.join(', ')}</Text>
+    </View>
+  );
+}
+
+interface TypeCardProps {
+  type: AnimalType;
+}
+
+function TypeCard({ type }: TypeCardProps) {
+  return (
+    <View className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden mx-4">
+      <View className="p-4">
+        <Text className="text-lg font-semibold text-gray-900">{type.name}</Text>
+        <TypeDetails label="Coats" items={type.coats} />
+        <TypeDetails label="Colors" items={type.colors} />
+        <TypeDetails label="Genders" items={type.genders} />
+      </View>
+    </View>
+  );
+}
 
 export default function TypesScreen() {
   const { data: types, isLoading, error } = useAnimalTypes();
@@ -44,30 +78,7 @@ export default function TypesScreen() {
     <View className="flex-1 bg-gray-100">
       <FlatList
         data={types}
-        renderItem={({ item }) => (
-          <View
-            className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden mx-4"
-            style={{
-              borderWidth: 1,
-              borderColor: '#f3f4f6',
-            }}
-          >
-            <View className="p-4">
-              <Text className="text-lg font-semibold text-gray-900">
-                {item.name}
-              </Text>
-              <Text className="text-gray-500 mt-1">
-                {item.coats.join(', ')}
-              </Text>
-              <Text className="text-gray-500 mt-1">
-                {item.colors.join(', ')}
-              </Text>
-              <Text className="text-gray-500 mt-1">
-                {item.genders.join(', ')}
-              </Text>
-            </View>
-          </View>
-        )}
+        renderItem={({ item }) => <TypeCard type={item} />}
         keyExtractor={(item) => item.name}
         contentContainerClassName="py-4"
       />
