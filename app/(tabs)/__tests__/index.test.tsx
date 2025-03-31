@@ -1,111 +1,178 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HomeScreen from '../index';
-import { useAnimals } from '@/hooks/usePetfinder';
+import { FavoritesProvider } from '@/hooks/FavoritesProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Mock the useAnimals hook
-jest.mock('@/hooks/usePetfinder', () => ({
-  useAnimals: jest.fn(),
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn().mockResolvedValue(null),
+  setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
-const mockAnimals = [
-  {
-    id: 1,
-    type: 'Dog',
-    breeds: {
-      primary: 'Labrador',
-      secondary: 'Golden Retriever',
-    },
-    age: 'Young',
-    gender: 'Male',
-    size: 'Medium',
-    name: 'Buddy',
-    description: 'A friendly dog',
-    photos: [
-      {
-        small: 'https://example.com/small.jpg',
-        medium: 'https://example.com/medium.jpg',
-        large: 'https://example.com/large.jpg',
-        full: 'https://example.com/full.jpg',
-      },
-    ],
-    status: 'adoptable',
-    published_at: '2024-03-31T00:00:00Z',
-    colors: {
-      primary: 'Black',
-      secondary: 'Brown',
-    },
-    attributes: {
-      spayed_neutered: true,
-      house_trained: true,
-      declawed: false,
-      special_needs: false,
-      shots_current: true,
-    },
-    environment: {
-      children: true,
-      dogs: true,
-      cats: true,
-    },
-    organization: {
-      name: 'Happy Pets Shelter',
-      address: {
-        city: 'San Francisco',
-        state: 'CA',
-      },
-      phone: '(555) 123-4567',
-      email: 'adopt@happypets.org',
-    },
-  },
-];
+// Mock the usePetfinder hook
+jest.mock('@/hooks/usePetfinder', () => ({
+  useAnimals: jest.fn().mockReturnValue({
+    data: { pages: [{ animals: [] }] },
+    isLoading: false,
+    error: null,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: jest.fn(),
+    refetch: jest.fn(),
+  }),
+}));
+
+// Mock the @expo/vector-icons module
+jest.mock('@expo/vector-icons', () => ({
+  MaterialCommunityIcons: 'MaterialCommunityIcons',
+  Ionicons: 'Ionicons',
+}));
+
+const queryClient = new QueryClient();
 
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders loading state', () => {
-    (useAnimals as jest.Mock).mockReturnValue({
+  it('renders loading state', async () => {
+    const { useAnimals } = require('@/hooks/usePetfinder');
+    (useAnimals as jest.Mock).mockReturnValueOnce({
+      data: undefined,
       isLoading: true,
       error: null,
-      data: null,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: jest.fn(),
+      refetch: jest.fn(),
     });
 
-    const { getByTestId } = render(<HomeScreen />);
-    expect(getByTestId('loading-indicator')).toBeTruthy();
+    const { getByTestId } = render(
+      <QueryClientProvider client={queryClient}>
+        <FavoritesProvider>
+          <HomeScreen />
+        </FavoritesProvider>
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('loading-indicator')).toBeTruthy();
+    });
   });
 
-  it('renders error state', () => {
-    const errorMessage = 'Failed to fetch animals';
-    (useAnimals as jest.Mock).mockReturnValue({
+  it('renders error state', async () => {
+    const { useAnimals } = require('@/hooks/usePetfinder');
+    (useAnimals as jest.Mock).mockReturnValueOnce({
+      data: undefined,
       isLoading: false,
-      error: new Error(errorMessage),
-      data: null,
+      error: new Error('Failed to fetch animals'),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: jest.fn(),
+      refetch: jest.fn(),
     });
 
-    const { getByText } = render(<HomeScreen />);
-    expect(getByText(`Error: ${errorMessage}`)).toBeTruthy();
+    const { getByText } = render(
+      <QueryClientProvider client={queryClient}>
+        <FavoritesProvider>
+          <HomeScreen />
+        </FavoritesProvider>
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(getByText('Error: Failed to fetch animals')).toBeTruthy();
+    });
   });
 
-  it('renders empty state when no animals are available', () => {
-    (useAnimals as jest.Mock).mockReturnValue({
-      isLoading: false,
-      error: null,
+  it('renders empty state when no animals are available', async () => {
+    const { useAnimals } = require('@/hooks/usePetfinder');
+    (useAnimals as jest.Mock).mockReturnValueOnce({
       data: { pages: [{ animals: [] }] },
-    });
-
-    const { getByText } = render(<HomeScreen />);
-    expect(getByText('No animals found.')).toBeTruthy();
-  });
-
-  it('renders list of animals', () => {
-    (useAnimals as jest.Mock).mockReturnValue({
       isLoading: false,
       error: null,
-      data: { pages: [{ animals: mockAnimals }] },
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: jest.fn(),
+      refetch: jest.fn(),
     });
 
-    const { getByTestId } = render(<HomeScreen />);
-    expect(getByTestId('animals-list')).toBeTruthy();
+    const { getByText } = render(
+      <QueryClientProvider client={queryClient}>
+        <FavoritesProvider>
+          <HomeScreen />
+        </FavoritesProvider>
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(getByText('No animals found.')).toBeTruthy();
+    });
+  });
+
+  it('renders list of animals', async () => {
+    const mockAnimal = {
+      id: 1,
+      name: 'Test Animal',
+      type: 'Dog',
+      breeds: { primary: 'Mixed', secondary: null },
+      colors: { primary: 'Brown', secondary: null },
+      age: 'Young',
+      gender: 'Male',
+      size: 'Medium',
+      status: 'adoptable',
+      description: 'A friendly dog',
+      photos: [{ medium: 'test.jpg' }],
+      published_at: '2024-03-20T12:00:00Z',
+      attributes: {
+        spayed_neutered: true,
+        house_trained: true,
+        declawed: false,
+        special_needs: false,
+        shots_current: true,
+      },
+      environment: {
+        children: true,
+        dogs: true,
+        cats: false,
+      },
+      contact: {
+        email: 'test@example.com',
+        phone: '123-456-7890',
+        address: {
+          city: 'Test City',
+          state: 'TS',
+        },
+      },
+      organization: {
+        id: 'ORG1',
+        name: 'Test Organization',
+      },
+    };
+
+    const { useAnimals } = require('@/hooks/usePetfinder');
+    (useAnimals as jest.Mock).mockReturnValueOnce({
+      data: { pages: [{ animals: [mockAnimal] }] },
+      isLoading: false,
+      error: null,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: jest.fn(),
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = render(
+      <QueryClientProvider client={queryClient}>
+        <FavoritesProvider>
+          <HomeScreen />
+        </FavoritesProvider>
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('animals-list')).toBeTruthy();
+    });
   });
 });

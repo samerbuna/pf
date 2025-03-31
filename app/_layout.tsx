@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { View } from 'react-native';
+import { FavoritesProvider } from '@/hooks/FavoritesProvider';
 
 import '../assets/global.css';
 
@@ -19,18 +20,20 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <View className="flex-1">
-        <Header />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="dark" />
-      </View>
+      <FavoritesProvider>
+        <View className="flex-1">
+          <Header />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="dark" />
+        </View>
+      </FavoritesProvider>
     </QueryClientProvider>
   );
 }

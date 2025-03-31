@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useAnimals, Animal } from '@/hooks/usePetfinder';
+import { useAnimals } from '@/hooks/usePetfinder';
 import { AnimalCard } from '@/components/AnimalCard';
 
 export default function HomeScreen() {
@@ -59,7 +59,7 @@ export default function HomeScreen() {
         testID="animals-list"
         data={data.pages.flatMap((page) => page.animals)}
         renderItem={({ item }) => <AnimalCard animal={item} />}
-        keyExtractor={(item) => `${item.id}-${item.published_at}`}
+        keyExtractor={(item) => String(item.id)}
         contentContainerClassName="p-4"
         onEndReached={() => {
           if (hasNextPage && !isFetchingNextPage) {

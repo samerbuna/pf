@@ -1,12 +1,19 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { AnimalCard } from '../AnimalCard';
 import { Animal } from '@/hooks/usePetfinder';
+import { FavoritesProvider } from '@/hooks/FavoritesProvider';
 
 // Mock MaterialCommunityIcons and Ionicons
 jest.mock('@expo/vector-icons', () => ({
   MaterialCommunityIcons: () => 'MaterialCommunityIcons',
   Ionicons: () => 'Ionicons',
+}));
+
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(() => Promise.resolve(null)),
+  setItem: jest.fn(() => Promise.resolve()),
 }));
 
 // Mock react-native-safe-area-context
@@ -70,47 +77,74 @@ const mockAnimal: Animal = {
   },
 };
 
-describe('AnimalCard', () => {
-  it('renders animal information correctly', () => {
-    const { getByTestId } = render(<AnimalCard animal={mockAnimal} />);
+const renderWithFavorites = (ui: React.ReactElement) => {
+  return render(<FavoritesProvider>{ui}</FavoritesProvider>);
+};
 
-    expect(getByTestId(`animal-name-${mockAnimal.id}`)).toHaveTextContent(
-      'Buddy'
-    );
-    expect(getByTestId(`animal-breed-${mockAnimal.id}`)).toHaveTextContent(
-      'Labrador'
-    );
-    expect(getByTestId(`animal-gender-${mockAnimal.id}`)).toHaveTextContent(
-      'Male'
-    );
-    expect(getByTestId(`animal-age-${mockAnimal.id}`)).toHaveTextContent(
-      'Young'
-    );
+describe('AnimalCard', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('shows placeholder when no photo is available', () => {
+  it('renders animal information correctly', async () => {
+    const { getByTestId } = renderWithFavorites(
+      <AnimalCard animal={mockAnimal} />
+    );
+
+    await waitFor(() => {
+      expect(getByTestId(`animal-name-${mockAnimal.id}`)).toHaveTextContent(
+        'Buddy'
+      );
+      expect(getByTestId(`animal-breed-${mockAnimal.id}`)).toHaveTextContent(
+        'Labrador'
+      );
+      expect(getByTestId(`animal-gender-${mockAnimal.id}`)).toHaveTextContent(
+        'Male'
+      );
+      expect(getByTestId(`animal-age-${mockAnimal.id}`)).toHaveTextContent(
+        'Young'
+      );
+    });
+  });
+
+  it('shows placeholder when no photo is available', async () => {
     const animalWithoutPhoto = {
       ...mockAnimal,
       photos: [],
     };
-    const { getByTestId } = render(<AnimalCard animal={animalWithoutPhoto} />);
+    const { getByTestId } = renderWithFavorites(
+      <AnimalCard animal={animalWithoutPhoto} />
+    );
 
-    expect(
-      getByTestId(`placeholder-image-${animalWithoutPhoto.id}`)
-    ).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        getByTestId(`placeholder-image-${animalWithoutPhoto.id}`)
+      ).toBeTruthy();
+    });
   });
 
-  it('displays image when photo is available', () => {
-    const { getByTestId } = render(<AnimalCard animal={mockAnimal} />);
+  it('displays image when photo is available', async () => {
+    const { getByTestId } = renderWithFavorites(
+      <AnimalCard animal={mockAnimal} />
+    );
 
-    const image = getByTestId(`animal-image-${mockAnimal.id}`);
-    expect(image.props.source.uri).toBe(mockAnimal.photos[0].medium);
+    await waitFor(() => {
+      const image = getByTestId(`animal-image-${mockAnimal.id}`);
+      expect(image.props.source.uri).toBe(mockAnimal.photos[0].medium);
+    });
   });
 
-  it('opens modal when card is pressed', () => {
-    const { getByTestId } = render(<AnimalCard animal={mockAnimal} />);
+  it('opens modal when card is pressed', async () => {
+    const { getByTestId } = renderWithFavorites(
+      <AnimalCard animal={mockAnimal} />
+    );
 
-    fireEvent.press(getByTestId(`animal-card-${mockAnimal.id}`));
-    expect(getByTestId('close-modal-button')).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(getByTestId(`animal-card-${mockAnimal.id}`));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId('close-modal-button')).toBeTruthy();
+    });
   });
 });

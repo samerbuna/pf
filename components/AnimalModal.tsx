@@ -3,6 +3,7 @@ import { View, Text, Image, Modal, ScrollView, Pressable } from 'react-native';
 import { Animal } from '@/hooks/usePetfinder';
 import { PlaceholderImage } from './PlaceholderImage';
 import { Ionicons } from '@expo/vector-icons';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface AnimalModalProps {
   animal: Animal;
@@ -11,10 +12,21 @@ interface AnimalModalProps {
 }
 
 export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const isAnimalFavorite = isFavorite(animal.id);
+
   const photoUrl =
     animal.photos[0]?.large ??
     animal.photos[0]?.medium ??
     animal.photos[0]?.full;
+
+  const handleFavoritePress = async () => {
+    if (isAnimalFavorite) {
+      await removeFavorite(animal.id);
+    } else {
+      await addFavorite(animal);
+    }
+  };
 
   const renderInfoSection = (title: string, children: React.ReactNode) => {
     if (!children) return null;
@@ -154,6 +166,33 @@ export function AnimalModal({ animal, visible, onClose }: AnimalModalProps) {
             ) : (
               <Image source={{ uri: photoUrl }} className="w-full h-64" />
             )}
+          </View>
+
+          {/* Favorite Button */}
+          <View className="px-4 py-2">
+            <Pressable
+              onPress={handleFavoritePress}
+              className={`flex-row items-center justify-center rounded-lg p-3 shadow-sm ${
+                isAnimalFavorite
+                  ? 'bg-rose-50 border border-rose-200'
+                  : 'bg-white border border-gray-200'
+              }`}
+              testID="favorite-button"
+            >
+              <Ionicons
+                name={isAnimalFavorite ? 'heart' : 'heart-outline'}
+                size={24}
+                color={isAnimalFavorite ? '#e11d48' : '#6b7280'}
+                style={{ marginRight: 8 }}
+              />
+              <Text
+                className={`text-base font-medium ${
+                  isAnimalFavorite ? 'text-rose-600' : 'text-gray-600'
+                }`}
+              >
+                {isAnimalFavorite ? 'Unfavorite' : 'Favorite'}
+              </Text>
+            </Pressable>
           </View>
 
           <View className="p-4">

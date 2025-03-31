@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AnimalCard } from '@/components/AnimalCard';
 import { Animal } from '@/hooks/usePetfinder';
+import { FavoritesProvider } from '@/hooks/FavoritesProvider';
 
 // Mock MaterialCommunityIcons and Ionicons
 jest.mock('@expo/vector-icons', () => ({
@@ -21,18 +22,33 @@ jest.mock('react-native-safe-area-context', () => ({
   }),
 }));
 
+// Mock the useFavorites hook
+jest.mock('@/hooks/useFavorites', () => ({
+  useFavorites: () => ({
+    isFavorite: jest.fn().mockReturnValue(false),
+    addFavorite: jest.fn().mockResolvedValue(undefined),
+    removeFavorite: jest.fn().mockResolvedValue(undefined),
+  }),
+}));
+
 const mockAnimal: Animal = {
-  id: 1,
+  id: 123,
+  name: 'Buddy',
   type: 'Dog',
   breeds: {
     primary: 'Labrador',
-    secondary: 'Golden Retriever',
+    secondary: null,
+  },
+  colors: {
+    primary: 'Black',
+    secondary: null,
   },
   age: 'Young',
   gender: 'Male',
   size: 'Medium',
-  name: 'Buddy',
-  description: 'A friendly dog',
+  status: 'adoptable',
+  published_at: '2024-03-20T12:00:00Z',
+  description: 'A friendly and playful dog looking for a loving home.',
   photos: [
     {
       small: 'https://example.com/small.jpg',
@@ -41,12 +57,6 @@ const mockAnimal: Animal = {
       full: 'https://example.com/full.jpg',
     },
   ],
-  status: 'adoptable',
-  published_at: '2024-03-31T00:00:00Z',
-  colors: {
-    primary: 'Black',
-    secondary: 'Brown',
-  },
   attributes: {
     spayed_neutered: true,
     house_trained: true,
@@ -57,35 +67,32 @@ const mockAnimal: Animal = {
   environment: {
     children: true,
     dogs: true,
-    cats: true,
+    cats: false,
   },
   organization: {
-    name: 'Happy Pets Shelter',
+    name: 'Happy Paws Shelter',
+    email: 'adopt@happypaws.org',
+    phone: '(555) 123-4567',
     address: {
       city: 'San Francisco',
       state: 'CA',
     },
-    phone: '(555) 123-4567',
-    email: 'adopt@happypets.org',
   },
 };
 
 describe('AnimalCard', () => {
   it('renders animal information correctly', () => {
-    const { getByTestId } = render(<AnimalCard animal={mockAnimal} />);
+    const { getByText, getByTestId } = render(
+      <FavoritesProvider>
+        <AnimalCard animal={mockAnimal} />
+      </FavoritesProvider>
+    );
 
-    expect(getByTestId(`animal-name-${mockAnimal.id}`)).toHaveTextContent(
-      'Buddy'
-    );
-    expect(getByTestId(`animal-breed-${mockAnimal.id}`)).toHaveTextContent(
-      'Labrador'
-    );
-    expect(getByTestId(`animal-gender-${mockAnimal.id}`)).toHaveTextContent(
-      'Male'
-    );
-    expect(getByTestId(`animal-age-${mockAnimal.id}`)).toHaveTextContent(
-      'Young'
-    );
+    expect(getByText('Buddy')).toBeTruthy();
+    expect(getByText('Labrador')).toBeTruthy();
+    expect(getByText('Young')).toBeTruthy();
+    expect(getByText('Male')).toBeTruthy();
+    expect(getByTestId(`animal-image-${mockAnimal.id}`)).toBeTruthy();
   });
 
   it('shows placeholder when no photo is available', () => {
@@ -93,7 +100,11 @@ describe('AnimalCard', () => {
       ...mockAnimal,
       photos: [],
     };
-    const { getByTestId } = render(<AnimalCard animal={animalWithoutPhoto} />);
+    const { getByTestId } = render(
+      <FavoritesProvider>
+        <AnimalCard animal={animalWithoutPhoto} />
+      </FavoritesProvider>
+    );
 
     expect(
       getByTestId(`placeholder-image-${animalWithoutPhoto.id}`)
@@ -101,14 +112,22 @@ describe('AnimalCard', () => {
   });
 
   it('displays image when photo is available', () => {
-    const { getByTestId } = render(<AnimalCard animal={mockAnimal} />);
+    const { getByTestId } = render(
+      <FavoritesProvider>
+        <AnimalCard animal={mockAnimal} />
+      </FavoritesProvider>
+    );
 
     const image = getByTestId(`animal-image-${mockAnimal.id}`);
     expect(image.props.source.uri).toBe(mockAnimal.photos[0].medium);
   });
 
   it('opens modal when card is pressed', () => {
-    const { getByTestId } = render(<AnimalCard animal={mockAnimal} />);
+    const { getByTestId } = render(
+      <FavoritesProvider>
+        <AnimalCard animal={mockAnimal} />
+      </FavoritesProvider>
+    );
 
     fireEvent.press(getByTestId(`animal-card-${mockAnimal.id}`));
     expect(getByTestId('close-modal-button')).toBeTruthy();
