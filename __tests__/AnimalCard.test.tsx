@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { AnimalCard } from '../AnimalCard';
+import { AnimalCard } from '@/components/AnimalCard';
 import { Animal } from '@/hooks/usePetfinder';
 
 // Mock MaterialCommunityIcons and Ionicons

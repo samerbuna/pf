@@ -20,11 +20,6 @@ export default function HomeScreen() {
     refetch,
   } = useAnimals();
 
-  const handleAnimalPress = (animal: Animal) => {
-    // We'll implement this later when we create the detail screen
-    console.log('Animal pressed:', animal.id);
-  };
-
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -63,9 +58,7 @@ export default function HomeScreen() {
       <FlatList
         testID="animals-list"
         data={data.pages.flatMap((page) => page.animals)}
-        renderItem={({ item }) => (
-          <AnimalCard animal={item} onPress={handleAnimalPress} />
-        )}
+        renderItem={({ item }) => <AnimalCard animal={item} />}
         keyExtractor={(item) => `${item.id}-${item.published_at}`}
         contentContainerClassName="p-4"
         onEndReached={() => {

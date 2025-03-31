@@ -21,6 +21,31 @@ export interface Animal {
   }[];
   status: string;
   published_at: string;
+  colors: {
+    primary: string;
+    secondary: string | null;
+  };
+  attributes: {
+    spayed_neutered: boolean;
+    house_trained: boolean;
+    declawed: boolean;
+    special_needs: boolean;
+    shots_current: boolean;
+  };
+  environment: {
+    children: boolean;
+    dogs: boolean;
+    cats: boolean;
+  };
+  organization?: {
+    name: string;
+    address: {
+      city: string;
+      state: string;
+    };
+    phone: string;
+    email: string;
+  };
 }
 
 export interface AnimalsResponse {

@@ -6,7 +6,9 @@ interface PlaceholderImageProps {
   testID?: string;
 }
 
-export function PlaceholderImage({ testID }: PlaceholderImageProps) {
+export const PlaceholderImage: React.FC<PlaceholderImageProps> = ({
+  testID,
+}) => {
   return (
     <View
       testID={testID}
@@ -16,4 +18,4 @@ export function PlaceholderImage({ testID }: PlaceholderImageProps) {
       <Text className="text-gray-400 mt-2">No image available</Text>
     </View>
   );
-}
+};
