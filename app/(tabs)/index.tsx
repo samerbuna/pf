@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { useAnimals, Animal } from '@/hooks/usePetfinder';
 import { AnimalCard } from '@/components/AnimalCard';
-import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const {

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Image, Text, View, Pressable } from 'react-native';
 import { Animal } from '@/hooks/usePetfinder';
-import { router } from 'expo-router';
 import { PlaceholderImage } from './PlaceholderImage';
+import { ThemedText } from './ThemedText';
 
 interface AnimalCardProps {
   animal: Animal;
@@ -38,26 +38,44 @@ export function AnimalCard({ animal, onPress }: AnimalCardProps) {
             }
           />
         ) : (
-          <PlaceholderImage />
+          <PlaceholderImage testID={`placeholder-image-${animal.id}`} />
         )}
       </View>
       <View className="p-4">
         <Text
           testID={`animal-name-${animal.id}`}
-          className="text-lg font-semibold mb-1"
+          className="text-lg font-semibold mb-2"
         >
           {animal.name}
         </Text>
-        <Text
-          testID={`animal-breed-${animal.id}`}
-          className="text-gray-600 mb-2"
-        >
-          {animal.breeds.primary}
-          {animal.breeds.secondary && ` / ${animal.breeds.secondary}`}
-        </Text>
-        <Text testID={`animal-details-${animal.id}`} className="text-gray-500">
-          {animal.age} • {animal.gender} • {animal.size}
-        </Text>
+        <View className="flex-row justify-between items-center py-3">
+          <View className="bg-blue-100 px-3 py-1.5 rounded-full">
+            <ThemedText
+              testID={`animal-breed-${animal.id}`}
+              className="text-sm text-blue-800"
+            >
+              {animal.breeds.primary}
+            </ThemedText>
+          </View>
+          <View className="flex-row gap-2">
+            <View className="bg-pink-100 px-3 py-1.5 rounded-full">
+              <ThemedText
+                testID={`animal-gender-${animal.id}`}
+                className="text-sm text-pink-800"
+              >
+                {animal.gender}
+              </ThemedText>
+            </View>
+            <View className="bg-green-100 px-3 py-1.5 rounded-full">
+              <ThemedText
+                testID={`animal-age-${animal.id}`}
+                className="text-sm text-green-800"
+              >
+                {animal.age}
+              </ThemedText>
+            </View>
+          </View>
+        </View>
       </View>
     </Pressable>
   );

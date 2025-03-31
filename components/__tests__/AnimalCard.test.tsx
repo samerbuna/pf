@@ -35,7 +35,7 @@ const mockAnimal: Animal = {
 describe('AnimalCard', () => {
   it('renders animal information correctly', () => {
     const onPress = jest.fn();
-    const { getByText, getByTestId } = render(
+    const { getByTestId } = render(
       <AnimalCard animal={mockAnimal} onPress={onPress} />
     );
 
@@ -43,10 +43,13 @@ describe('AnimalCard', () => {
       'Buddy'
     );
     expect(getByTestId(`animal-breed-${mockAnimal.id}`)).toHaveTextContent(
-      'Labrador / Golden Retriever'
+      'Labrador'
     );
-    expect(getByTestId(`animal-details-${mockAnimal.id}`)).toHaveTextContent(
-      'Young • Male • Medium'
+    expect(getByTestId(`animal-gender-${mockAnimal.id}`)).toHaveTextContent(
+      'Male'
+    );
+    expect(getByTestId(`animal-age-${mockAnimal.id}`)).toHaveTextContent(
+      'Young'
     );
   });
 
@@ -65,11 +68,13 @@ describe('AnimalCard', () => {
       ...mockAnimal,
       photos: [],
     };
-    const { getByText } = render(
+    const { getByTestId } = render(
       <AnimalCard animal={animalWithoutPhoto} onPress={jest.fn()} />
     );
 
-    expect(getByText('No image available')).toBeTruthy();
+    expect(
+      getByTestId(`placeholder-image-${animalWithoutPhoto.id}`)
+    ).toBeTruthy();
   });
 
   it('displays image when photo is available', () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import HomeScreen from '../index';
 import { useAnimals } from '@/hooks/usePetfinder';
 
@@ -85,7 +85,9 @@ describe('HomeScreen', () => {
 
     const { getByText } = render(<HomeScreen />);
     expect(getByText('Buddy')).toBeTruthy();
-    expect(getByText('Labrador / Golden Retriever')).toBeTruthy();
+    expect(getByText('Labrador')).toBeTruthy();
+    expect(getByText('Male')).toBeTruthy();
+    expect(getByText('Young')).toBeTruthy();
   });
 
   it('loads more animals when scrolling to bottom', async () => {
