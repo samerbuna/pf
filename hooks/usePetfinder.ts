@@ -33,6 +33,17 @@ export interface AnimalsResponse {
   };
 }
 
+export interface AnimalType {
+  name: string;
+  coats: string[];
+  colors: string[];
+  genders: string[];
+}
+
+export interface TypesResponse {
+  types: AnimalType[];
+}
+
 // API configuration
 const API_KEY = process.env.EXPO_PUBLIC_PETFINDER_API_KEY;
 const API_SECRET = process.env.EXPO_PUBLIC_PETFINDER_API_SECRET;
@@ -92,10 +103,13 @@ export function useAnimalTypes() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (!response.ok) {
         throw new Error('Failed to fetch animal types');
       }
-      return response.json();
+
+      const data = (await response.json()) as TypesResponse;
+      return data.types;
     },
   });
 }
